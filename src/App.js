@@ -1,24 +1,69 @@
-import logo from './logo.svg';
-import './App.css';
+import "./App.css";
+import { useState } from "react";
+import "./index.scss";
+import "./reset.css";
+import SidePanel from "./components/SidePanel/SidePanel";
+import Dashboard from "./components/Dashboard/Dashboard";
+import AddTask from "./components/Dashboard/Task/AddTask/AddTask";
+import { useDispatch } from "react-redux";
+import { getIDTask, ShowIncompletedTask } from "./redux/action";
+import EditTask from "./components/Dashboard/Task/EditTask/EditTask";
 
 function App() {
+  const [checked, setChecked] = useState(false);
+  const [checked1, setChecked1] = useState(false);
+  const [data, setData] = useState("");
+  const [isActiveAddTask, setIsActiveAddTask] = useState(false);
+  const [isActiveAddTask1, setIsActiveAddTask1] = useState(false);
+  const [editTodo, setEditTodo] = useState("");
+  const dispatch = useDispatch();
+
+  const handleChecked = (e) => {
+    e.preventDefault();
+    setChecked(!checked);
+    dispatch(ShowIncompletedTask(!checked === true ? "incompleted" : "All"));
+  };
+
+  const handleActiveForm = (e) => {
+    setIsActiveAddTask(!checked);
+    console.log(checked);
+  };
+  const handleActiveForm1 = (todo) => {
+    setIsActiveAddTask1(!checked1);
+    // localStorage.setItem("id", e.target.getAttribute("value"));
+    // dispatch(getIDTask(e.target.getAttribute("value")));
+    setEditTodo(todo);
+  };
+
+  const handleCloseForm = (e) => {
+    setIsActiveAddTask(false);
+  };
+  const handleCloseForm1 = () => {
+    setIsActiveAddTask1(false);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <div className="dato">
+        <div className="container">
+          <SidePanel />
+          <Dashboard
+            checked={checked}
+            handleActiveForm={handleActiveForm}
+            handleActiveForm1={handleActiveForm1}
+            handleChecked={handleChecked}
+          />
+        </div>
+      </div>
+      <div className={isActiveAddTask === true ? "addTask is-show" : "addTask"}>
+        <AddTask handleCloseForm={handleCloseForm} />
+      </div>
+      <div
+        className={isActiveAddTask1 === true ? "editTask is-show" : "editTask"}
+      >
+        <EditTask handleCloseForm1={handleCloseForm1} editTodo={editTodo} />
+      </div>
+    </>
   );
 }
 
