@@ -1,37 +1,29 @@
 import React, { useState } from "react";
 
-import firebase from "firebase/compat/app";
-
 import "firebase/compat/auth";
 import "firebase/compat/firestore";
 import db from "../../../../firebase";
 
 import TextField from "@mui/material/TextField";
 import InputLabel from "@mui/material/InputLabel";
-// import AdapterDateFns from "@mui/lab/AdapterDateFns";
-// import LocalizationProvider from "@mui/lab/LocalizationProvider";
+import DateTimePicker from "react-datetime-picker";
+
+import { todoListSelector } from "../../../../redux/selector";
+import Swal from "sweetalert2";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
-import { useDispatch, useSelector } from "react-redux";
-import { addTask } from "../../../../redux/action";
+import { useSelector } from "react-redux";
 import { v4 as uuidv4 } from "uuid";
 import Button from "@mui/material/Button";
 
-const AddTask = ({ handleCloseForm }) => {
-  const dispatch = useDispatch();
-  const [date, setDate] = useState(
-    new Date().toJSON().slice(0, 19).split("-").join("/").split("T").join(" ")
-  );
+const AddTask = ({ handleCloseForm, setIsActiveAddTask }) => {
   const [titleValue, setTitleValue] = useState("");
   const [descValue, setDescValue] = useState("");
   const [statusValue, setStatusValue] = useState("not-started");
   const [priorityValue, setPriorityValue] = useState("Medium");
-  // const [dateValue] = useState(date);
-
-  // `${new Date().getDate()}/${
-  //   new Date().getMonth() + 1
-  // }/${new Date().getFullYear()} ${new Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}`
+  const [dateValue, setDateValue] = useState(new Date());
+  console.log(dateValue.getMonth() + 1);
   const handleStatusValue = (event) => {
     setStatusValue(event.target.value);
   };
@@ -42,45 +34,67 @@ const AddTask = ({ handleCloseForm }) => {
   const handleDescValue = (e) => {
     setDescValue(e.target.value);
   };
+  const todoListTask = useSelector(todoListSelector);
+
+  let index = 1;
+  for (let i = 0; i < todoListTask.length; i++) {
+    if (index <= todoListTask[i].index) {
+      index = todoListTask[i].index + 1;
+    }
+  }
   const handlePriorityValue = (e) => {
     setPriorityValue(e.target.value);
+  };
+  const handleDateValue = (e) => {
+    setDateValue(e);
   };
   const handleAddTask = (e) => {
     if (titleValue != "") {
       db.collection("todos").add({
         id: uuidv4(),
         title: titleValue,
+        index: index,
         desc: descValue,
         status: statusValue,
         prevStatus: statusValue === "done" ? "not-started" : statusValue,
         priority: priorityValue,
-        deadline: date,
+        deadline: `${dateValue.getFullYear()}/${
+          dateValue.getMonth() + 1 < 10
+            ? "0" + (dateValue.getMonth() + 1)
+            : dateValue.getMonth() + 1
+        }/${
+          dateValue.getDate() < 10
+            ? "0" + dateValue.getDate()
+            : dateValue.getDate()
+        } ${
+          dateValue.getHours() < 10
+            ? "0" + dateValue.getHours()
+            : dateValue.getHours()
+        }:${
+          dateValue.getMinutes() < 10
+            ? "0" + dateValue.getMinutes()
+            : dateValue.getMinutes()
+        }:${
+          dateValue.getSeconds() < 10
+            ? "0" + dateValue.getSeconds()
+            : dateValue.getSeconds()
+        }`,
         completed: statusValue === "done" ? true : false,
       });
+      Swal.fire("Add Task Success!", "", "success");
+    } else if (titleValue === "") {
+      Swal.fire("Add Task Failed!", "Please enter all fields", "error");
     }
-    // dispatch(
-    //   addTask({
-    //     id: uuidv4(),
-    //     title: titleValue,
-    //     desc: descValue,
-    //     status: statusValue,
-    //     prevStatus: statusValue === "done" ? "not-started" : statusValue,
-    //     priority: priorityValue,
-    //     deadline: date,
-    //     completed: statusValue === "done" ? true : false,
-    //   })
-    // );
     setTitleValue("");
     setDescValue("");
     setStatusValue("not-started");
     setPriorityValue("Medium");
+    setDateValue(new Date());
+    setIsActiveAddTask(false);
   };
 
   return (
-    <div
-      className="addTask-main"
-      // onClick={(e) => setIsActiveAddTask(!isActiveAddTask)}
-    >
+    <div className="addTask-main">
       <i class="fa fa-times addTask-close" onClick={handleCloseForm}></i>
       <div className="addTask-content">
         <h2 className="addTask-title">Add New Task</h2>
@@ -109,7 +123,7 @@ const AddTask = ({ handleCloseForm }) => {
             />
           </div>
           <div className="dropdown">
-            <FormControl required sx={{ m: 1, minWidth: 210, margin: 0 }}>
+            <FormControl required sx={{ m: 1, minWidth: "47%", margin: 0 }}>
               <InputLabel id="demo-simple-select-required-label">
                 Status
               </InputLabel>
@@ -152,7 +166,7 @@ const AddTask = ({ handleCloseForm }) => {
                 </MenuItem>
               </Select>
             </FormControl>
-            <FormControl required sx={{ m: 1, minWidth: 210, margin: 0 }}>
+            <FormControl required sx={{ m: 1, minWidth: "47%", margin: 0 }}>
               <InputLabel id="demo-simple-select-required-label">
                 Priority
               </InputLabel>
@@ -190,9 +204,10 @@ const AddTask = ({ handleCloseForm }) => {
               </Select>
             </FormControl>
           </div>
-          {/* <LocalizationProvider dateAdapter={AdapterDateFns}>
-            ...
-          </LocalizationProvider> */}
+          <div className="datetime">
+            <span>Deadline: </span>
+            <DateTimePicker onChange={handleDateValue} value={dateValue} />
+          </div>
           <div className="control">
             <Button
               variant="contained"

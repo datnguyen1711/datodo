@@ -1,7 +1,7 @@
 const initialState = {
   filter: {
     sort: "None",
-    status: "All",
+    status: "incompleted",
     filterStatus: "all",
     idTask: "None",
     priority: [],

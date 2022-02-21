@@ -2,45 +2,49 @@ import React, { useState, useEffect } from "react";
 
 import TextField from "@mui/material/TextField";
 import InputLabel from "@mui/material/InputLabel";
-// import AdapterDateFns from "@mui/lab/AdapterDateFns";
-// import LocalizationProvider from "@mui/lab/LocalizationProvider";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
+import Swal from "sweetalert2";
 
 import "firebase/compat/auth";
 import "firebase/compat/firestore";
 import db from "../../../../firebase";
-
-import {
-  todoListSelector,
-  todoListSelector1,
-} from "../../../../redux/selector";
+import DateTimePicker from "react-datetime-picker";
 import Select from "@mui/material/Select";
-import { useDispatch, useSelector } from "react-redux";
-import { addTask } from "../../../../redux/action";
-import { v4 as uuidv4 } from "uuid";
 import Button from "@mui/material/Button";
 
-const EditTask = ({ handleCloseForm1, editTodo }) => {
-  const dispatch = useDispatch();
-  const [state, setState] = useState({});
-  const [descValue, setDescValue] = useState("");
-  const [statusValue, setStatusValue] = useState("not-started");
-  const [priorityValue, setPriorityValue] = useState("Medium");
-
+const EditTask = ({ handleCloseForm1, setIsActiveAddTask1, editTodo }) => {
   const [editId, setEditId] = useState("");
   const [editTitle, setEditTitle] = useState("");
-  const [editDeadline, setEditDeadline] = useState("");
+  const [editDeadline, setEditDeadline] = useState(new Date());
   const [editPriority, setEditPriority] = useState("");
   const [editStatus, setEditStatus] = useState("");
   const [editPrevStatus, setEditPrevStatus] = useState("");
   const [editDesc, setEditDesc] = useState("");
   const [editCompleted, setEditCompleted] = useState("");
 
-  const [dateValue] = useState(
-    `${new Date().getDate()}/${
-      new Date().getMonth() + 1
-    }/${new Date().getFullYear()} ${new Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}`
+  const [nowDate] = useState(
+    `${new Date().getFullYear()}/${
+      new Date().getMonth() + 1 < 10
+        ? "0" + (new Date().getMonth() + 1)
+        : new Date().getMonth() + 1
+    }/${
+      new Date().getDate() < 10
+        ? "0" + new Date().getDate()
+        : new Date().getDate()
+    } ${
+      new Date().getHours() < 10
+        ? "0" + new Date().getHours()
+        : new Date().getHours()
+    }:${
+      new Date().getMinutes() < 10
+        ? "0" + new Date().getMinutes()
+        : new Date().getMinutes()
+    }:${
+      new Date().getSeconds() < 10
+        ? "0" + new Date().getSeconds()
+        : new Date().getSeconds()
+    }`
   );
 
   useEffect(() => {
@@ -71,22 +75,46 @@ const EditTask = ({ handleCloseForm1, editTodo }) => {
   const handlePriorityValue = (e) => {
     setEditPriority(e.target.value);
   };
+  const handleDateValue = (e) => {
+    setEditDeadline(
+      `${e.getFullYear()}/${
+        e.getMonth() + 1 < 10 ? "0" + (e.getMonth() + 1) : e.getMonth() + 1
+      }/${e.getDate() < 10 ? "0" + e.getDate() : e.getDate()} ${
+        e.getHours() < 10 ? "0" + e.getHours() : e.getHours()
+      }:${e.getMinutes() < 10 ? "0" + e.getMinutes() : e.getMinutes()}:${
+        e.getSeconds() < 10 ? "0" + e.getSeconds() : e.getSeconds()
+      }`
+    );
+  };
   const handleAddTask = (e) => {
-    db.collection("todos")
-      .doc(editId)
-      .update({
-        id: editId,
-        title: editTitle,
-        desc: editDesc,
-        status: editStatus,
-        prevStatus: editStatus === "done" ? editTodo.status : editPrevStatus,
-        priority: editPriority,
-        deadline: editDeadline,
-        completed: editStatus === "done" ? true : false,
-      });
-    // setTitleValue("");
-    setDescValue("");
-    setStatusValue("not-started");
+    if (editTitle !== "" && editDesc !== "") {
+      db.collection("todos")
+        .doc(editId)
+        .update({
+          id: editId,
+          title: editTitle,
+          desc: editDesc,
+          status: editDeadline < nowDate ? "delayed" : editStatus,
+          prevStatus: editStatus === "done" ? editTodo.status : editPrevStatus,
+          priority: editPriority,
+          deadline: editDeadline,
+          completed: editStatus === "done" ? true : false,
+        });
+      Swal.fire("Update Task Success!", "", "success");
+    } else {
+      Swal.fire("Update Task Failed!", "Please enter all fields", "error");
+    }
+    setEditTitle(editTodo.title);
+    setEditDesc(editTodo.desc);
+    setEditTitle(editTodo.title);
+    setEditId(editTodo.id);
+    setEditDeadline(editTodo.deadline);
+    setEditPriority(editTodo.priority);
+    setEditStatus(editTodo.status);
+    setEditPrevStatus(editTodo.prevStatus);
+    setEditDesc(editTodo.desc);
+    setEditCompleted(editTodo.completed);
+    setIsActiveAddTask1(false);
   };
 
   return (
@@ -203,6 +231,10 @@ const EditTask = ({ handleCloseForm1, editTodo }) => {
               </Select>
             </FormControl>
           </div>
+          <div className="datetime">
+            <span>Deadline: </span>
+            <DateTimePicker onChange={handleDateValue} value={new Date()} />
+          </div>
           {/* <LocalizationProvider dateAdapter={AdapterDateFns}>
             ...
           </LocalizationProvider> */}
@@ -213,7 +245,7 @@ const EditTask = ({ handleCloseForm1, editTodo }) => {
               style={{ padding: "12px", backgroundColor: "#58D65D" }}
               onClick={handleAddTask}
             >
-              Add
+              Update
             </Button>
             <Button
               variant="contained"

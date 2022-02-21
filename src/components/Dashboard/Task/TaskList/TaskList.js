@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { sortTask, removeTask } from "../../../../redux/action";
+import { todoListSelector } from "../../../../redux/selector";
+
+import firebase from "firebase/compat/app";
+import "firebase/compat/auth";
+import "firebase/compat/firestore";
+import db from "../../../../firebase";
 
 import TaskItem from "../TaskItem/TaskItem";
 
@@ -8,22 +14,23 @@ const TaskList = ({ handleActiveForm1 }) => {
   const [statusSortTitle, setStatusSortTitle] = useState(true);
   const [statusSortPriority, setStatusSortPriority] = useState(true);
   const [statusSortDate, setStatusSortDate] = useState(true);
+
   const dispatch = useDispatch();
+
+  const todoListTask = useSelector(todoListSelector);
   const handleSortTitle = (e) => {
     setStatusSortTitle(!statusSortTitle);
-    // console.log(e.target.getAttribute("value"));
     dispatch(sortTask(e.target.getAttribute("value")));
   };
   const handleSortPriority = (e) => {
     setStatusSortPriority(!statusSortPriority);
-    // console.log(e.target.getAttribute("value"));
     dispatch(sortTask(e.target.getAttribute("value")));
   };
   const handleSortDate = (e) => {
     setStatusSortDate(!statusSortDate);
-    // console.log(e.target.getAttribute("value"));
     dispatch(sortTask(e.target.getAttribute("value")));
   };
+
   return (
     <div className="task-list">
       <ul className="task-list-first" style={{ height: "20px" }}>
@@ -78,9 +85,7 @@ const TaskList = ({ handleActiveForm1 }) => {
         </li>
         <li className="task-list-column"></li>
       </ul>
-      <div className="task-list-main">
-        <TaskItem handleActiveForm1={handleActiveForm1} />
-      </div>
+      <TaskItem handleActiveForm1={handleActiveForm1} />
     </div>
   );
 };

@@ -10,7 +10,8 @@ import { getIDTask, ShowIncompletedTask } from "./redux/action";
 import EditTask from "./components/Dashboard/Task/EditTask/EditTask";
 
 function App() {
-  const [checked, setChecked] = useState(false);
+  const [checked, setChecked] = useState(true);
+  const [checked2, setChecked2] = useState(false);
   const [checked1, setChecked1] = useState(false);
   const [data, setData] = useState("");
   const [isActiveAddTask, setIsActiveAddTask] = useState(false);
@@ -25,8 +26,7 @@ function App() {
   };
 
   const handleActiveForm = (e) => {
-    setIsActiveAddTask(!checked);
-    console.log(checked);
+    setIsActiveAddTask(!checked2);
   };
   const handleActiveForm1 = (todo) => {
     setIsActiveAddTask1(!checked1);
@@ -56,12 +56,19 @@ function App() {
         </div>
       </div>
       <div className={isActiveAddTask === true ? "addTask is-show" : "addTask"}>
-        <AddTask handleCloseForm={handleCloseForm} />
+        <AddTask
+          handleCloseForm={handleCloseForm}
+          setIsActiveAddTask={setIsActiveAddTask}
+        />
       </div>
       <div
         className={isActiveAddTask1 === true ? "editTask is-show" : "editTask"}
       >
-        <EditTask handleCloseForm1={handleCloseForm1} editTodo={editTodo} />
+        <EditTask
+          handleCloseForm1={handleCloseForm1}
+          setIsActiveAddTask1={setIsActiveAddTask1}
+          editTodo={editTodo}
+        />
       </div>
     </>
   );
