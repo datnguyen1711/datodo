@@ -1,8 +1,42 @@
-export const addTask = (data) => {
-  return {
+import db from "../firebase";
+import {
+  orderBy,
+  collection,
+  query,
+  onSnapshot,
+  doc,
+  writeBatch,
+} from "firebase/firestore";
+
+export const addTask = (nowDate) => (dispatch) => {
+  dispatch({
     type: "ADD_TASK",
-    payload: data,
-  };
+  });
+
+  const datas = query(collection(db, "todos"), orderBy("index", "asc"));
+  const dataList = onSnapshot(datas, (querySnapshot) => {
+    const data = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      status:
+        doc.data().completed === "true"
+          ? doc.data().status
+          : doc.data().deadline < nowDate
+          ? "delayed"
+          : doc.data().status,
+      prevStatus: doc.data().status,
+      ...doc.data(),
+    }));
+
+    dispatch({
+      type: "ADD_TASK_COMPLETED",
+      payload: {
+        tasks: data,
+        size: data.length,
+      },
+    });
+  });
+
+  return dataList;
 };
 export const fetchTask = (data) => {
   return {
@@ -22,6 +56,7 @@ export const removeTask = (data) => {
     payload: data,
   };
 };
+
 export const ShowIncompletedTask = (data) => {
   return {
     type: "INCOMPLETED_TASK",
@@ -45,4 +80,18 @@ export const getIDTask = (data) => {
     type: "GET_IDTASK",
     payload: data,
   };
+};
+export const dragTask = (newArray, newArray1) => async (dispatch) => {
+  dispatch({
+    type: "DND_TASK",
+    payload: newArray1,
+  });
+
+  const batch = writeBatch(db);
+  newArray1.forEach((task, index) => {
+    const linkRef = doc(db, "todos", task.id);
+    batch.update(linkRef, { index: newArray[index].index });
+  });
+
+  await batch.commit();
 };

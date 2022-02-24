@@ -23,7 +23,6 @@ const AddTask = ({ handleCloseForm, setIsActiveAddTask }) => {
   const [statusValue, setStatusValue] = useState("not-started");
   const [priorityValue, setPriorityValue] = useState("Medium");
   const [dateValue, setDateValue] = useState(new Date());
-  console.log(dateValue.getMonth() + 1);
   const handleStatusValue = (event) => {
     setStatusValue(event.target.value);
   };
@@ -36,12 +35,10 @@ const AddTask = ({ handleCloseForm, setIsActiveAddTask }) => {
   };
   const todoListTask = useSelector(todoListSelector);
 
-  let index = 1;
-  for (let i = 0; i < todoListTask.length; i++) {
-    if (index <= todoListTask[i].index) {
-      index = todoListTask[i].index + 1;
-    }
-  }
+  let index =
+    todoListTask === null
+      ? 1
+      : Math.max(...todoListTask.map((item) => item.index)) + 1;
   const handlePriorityValue = (e) => {
     setPriorityValue(e.target.value);
   };
@@ -51,7 +48,6 @@ const AddTask = ({ handleCloseForm, setIsActiveAddTask }) => {
   const handleAddTask = (e) => {
     if (titleValue != "") {
       db.collection("todos").add({
-        id: uuidv4(),
         title: titleValue,
         index: index,
         desc: descValue,

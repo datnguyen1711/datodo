@@ -10,17 +10,13 @@ export const todoListSelector = (state) => {
   const newState1 = newState.filter((item) =>
     statusBox === "all" ? item : item.status === statusBox
   );
-  const newState1Sort = [...newState1].sort(function (a, b) {
-    return a.index - b.index;
-  });
+  const newState1Sort = [...newState1];
 
   if (checkedBox === "incompleted") {
     const newStateIncompleted = newState.filter((item) =>
       statusBox === "all" ? true : item.status === statusBox
     );
-    const newStateIncompleted1 = [...newStateIncompleted].sort(function (a, b) {
-      return a.index - b.index;
-    });
+    const newStateIncompleted1 = [...newStateIncompleted];
 
     switch (sortBox) {
       case "title-up": {

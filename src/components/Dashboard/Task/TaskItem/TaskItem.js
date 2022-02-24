@@ -4,10 +4,15 @@ import firebase from "firebase/compat/app";
 import "firebase/compat/auth";
 import "firebase/compat/firestore";
 import db from "../../../../firebase";
-
+import { doc, deleteDoc } from "firebase/firestore";
 import Checkbox from "@mui/material/Checkbox";
 import { useDispatch, useSelector } from "react-redux";
-import { completedTask, removeTask, fetchTask } from "../../../../redux/action";
+import {
+  completedTask,
+  removeTask,
+  addTask,
+  dragTask,
+} from "../../../../redux/action";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import Swal from "sweetalert2";
@@ -60,15 +65,16 @@ const TaskItem = ({ handleActiveForm1 }) => {
   const handleClose = () => {
     setOpen(false);
   };
-  const handleSubmitClose = () => {
+  const handleSubmitClose = async () => {
     setOpen(false);
     dispatch(removeTask(idValue));
-    db.collection("todos").doc(idValue).delete();
+    await deleteDoc(doc(db, "todos", idValue));
     Swal.fire("Delete Task Success!", "", "success");
   };
 
   useEffect(() => {
-    fetchDataFireBase();
+    const getData = dispatch(addTask(nowDate));
+    return () => getData();
   }, []);
   const fetchDataFireBase = () => {
     db.collection("todos").onSnapshot(function (querySnapshot) {
@@ -92,29 +98,6 @@ const TaskItem = ({ handleActiveForm1 }) => {
             index: doc.data().index,
           };
         }),
-      });
-    });
-    db.collection("todos").onSnapshot(function (querySnapshot) {
-      querySnapshot.docs.map((doc) => {
-        dispatch(
-          fetchTask({
-            id: doc.id,
-            title: doc.data().title,
-            desc: doc.data().desc,
-            status:
-              doc.data().completed === true
-                ? doc.data().status
-                : doc.data().deadline < nowDate
-                ? "delayed"
-                : doc.data().status,
-            prevStatus:
-              doc.data().deadline < nowDate ? "delayed" : doc.data().prevStatus,
-            priority: doc.data().priority,
-            deadline: doc.data().deadline,
-            completed: doc.data().completed,
-            index: doc.data().index,
-          })
-        );
       });
     });
   };
@@ -189,11 +172,8 @@ const TaskItem = ({ handleActiveForm1 }) => {
       );
       const [removed] = newArray1.splice(source.index, 1);
       const result = newArray1.splice(destination.index, 0, removed);
-      for (let i = 0; i < newArray1.length; i++) {
-        db.collection("todos")
-          .doc(newArray1[i].id)
-          .update({ index: newArray[i].index });
-      }
+      console.log(newArray1);
+      dispatch(dragTask(newArray, newArray1));
     } else {
       Swal.fire("Warning", "You should unsort before drag task!", "warning");
     }

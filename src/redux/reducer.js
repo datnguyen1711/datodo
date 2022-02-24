@@ -12,9 +12,13 @@ const initialState = {
 const rootReducer = (state = initialState, action) => {
   switch (action.type) {
     case "ADD_TASK":
+      return { ...state };
+
+    case "ADD_TASK_COMPLETED":
       return {
         ...state,
-        todoList: [action.payload, ...state.todoList],
+        todoList: action.payload.tasks,
+        size: action.payload.size,
       };
     case "FETCH_TASK":
       return {
@@ -71,7 +75,8 @@ const rootReducer = (state = initialState, action) => {
         ...state,
         filter: { ...state.filter, idTask: action.payload },
       };
-
+    case "DND_TASK":
+      return { ...state, todoList: action.payload };
     default:
       return state;
   }
