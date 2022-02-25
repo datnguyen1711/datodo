@@ -14,7 +14,6 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import { useSelector } from "react-redux";
-import { v4 as uuidv4 } from "uuid";
 import Button from "@mui/material/Button";
 
 const AddTask = ({ handleCloseForm, setIsActiveAddTask }) => {

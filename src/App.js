@@ -3,10 +3,10 @@ import { useState } from "react";
 import "./index.scss";
 import "./reset.css";
 import SidePanel from "./components/SidePanel/SidePanel";
-import Dashboard from "./components/Dashboard/Dashboard";
+import Dashboard from "./components/Dashboard/index";
 import AddTask from "./components/Dashboard/Task/AddTask/AddTask";
 import { useDispatch } from "react-redux";
-import { getIDTask, ShowIncompletedTask } from "./redux/action";
+import { ShowIncompletedTask } from "./redux/action";
 import EditTask from "./components/Dashboard/Task/EditTask/EditTask";
 
 function App() {
@@ -30,8 +30,6 @@ function App() {
   };
   const handleActiveForm1 = (todo) => {
     setIsActiveAddTask1(!checked1);
-    // localStorage.setItem("id", e.target.getAttribute("value"));
-    // dispatch(getIDTask(e.target.getAttribute("value")));
     setEditTodo(todo);
   };
 

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 
-import firebase from "firebase/compat/app";
 import "firebase/compat/auth";
 import "firebase/compat/firestore";
 import db from "../../../../firebase";
@@ -21,16 +20,11 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
-import { todoListSelector, checkedSelector } from "../../../../redux/selector";
+import { checkedSelector } from "../../../../redux/selector";
 import { sortSelector } from "../../../../redux/selector";
 import { Draggable, DragDropContext, Droppable } from "react-beautiful-dnd";
 
-const defaultValue = {
-  data: [],
-};
-
-const TaskItem = ({ handleActiveForm1 }) => {
-  const [state, setState] = useState(defaultValue);
+const TaskItem = ({ handleActiveForm1, todoListTask }) => {
   const [nowDate] = useState(
     `${new Date().getFullYear()}/${
       new Date().getMonth() + 1 < 10
@@ -76,33 +70,7 @@ const TaskItem = ({ handleActiveForm1 }) => {
     const getData = dispatch(addTask(nowDate));
     return () => getData();
   }, []);
-  const fetchDataFireBase = () => {
-    db.collection("todos").onSnapshot(function (querySnapshot) {
-      setState({
-        ...state,
-        data: querySnapshot.docs.map((doc) => {
-          return {
-            id: doc.id,
-            title: doc.data().title,
-            desc: doc.data().desc,
-            status:
-              doc.data().completed === "true"
-                ? doc.data().status
-                : doc.data().deadline < nowDate
-                ? "delayed"
-                : doc.data().status,
-            prevStatus: doc.data().status,
-            priority: doc.data().priority,
-            deadline: doc.data().deadline,
-            completed: doc.data().completed,
-            index: doc.data().index,
-          };
-        }),
-      });
-    });
-  };
 
-  const todoListTask = useSelector(todoListSelector);
   const completedTask1 = useSelector(checkedSelector);
   const sortSelector1 = useSelector(sortSelector);
 
@@ -172,7 +140,6 @@ const TaskItem = ({ handleActiveForm1 }) => {
       );
       const [removed] = newArray1.splice(source.index, 1);
       const result = newArray1.splice(destination.index, 0, removed);
-      console.log(newArray1);
       dispatch(dragTask(newArray, newArray1));
     } else {
       Swal.fire("Warning", "You should unsort before drag task!", "warning");
